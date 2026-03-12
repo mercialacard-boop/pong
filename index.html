@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Pong</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #0a0a0f;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    min-height: 100vh;
+    font-family: monospace; color: #fff;
+    user-select: none;
+  }
+  #scoreboard {
+    display: flex; gap: 48px;
+    font-size: 32px; font-weight: 500;
+    margin-bottom: 12px; letter-spacing: 3px;
+  }
+  #canvas { border: 1px solid rgba(255,255,255,0.12); border-radius: 4px; display: block; cursor: none; }
+  #statusbar { margin-top: 10px; font-size: 12px; color: rgba(255,255,255,0.35); display: flex; gap: 16px; align-items: center; }
+  #dot { width: 7px; height: 7px; border-radius: 50%; background: rgba(255,255,255,0.2); transition: background 0.4s; }
+  #dot.connected { background: #1D9E75; }
+  #dot.cheat { background: #7F77DD; }
+  #lobby {
+    position: absolute; inset: 0;
+    background: rgba(10,10,15,0.95);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 18px;
+  }
+  #lobby h1 { font-size: 22px; font-weight: 500; letter-spacing: 2px; }
+  #lobby p { font-size: 13px; color: rgba(255,255,255,0.45); text-align: center; max-width: 320px; line-height: 1.7; }
+  #lobby input {
+    background: transparent; border: 0.5px solid rgba(255,255,255,0.25);
+    border-radius: 6px; padding: 8px 16px; color: #fff;
+    font-family: monospace; font-size: 14px; width: 260px; outline: none;
+    text-align: center;
+  }
+  #lobby input:focus { border-color: rgba(255,255,255,0.5); }
+  #lobby button {
+    padding: 9px 32px; background: transparent;
+    border: 0.5px solid rgba(255,255,255,0.3); border-radius: 6px;
+    color: #fff; font-family: monospace; font-size: 13px; cursor: pointer;
+  }
+  #lobby button:hover { background: rgba(255,255,255,0.08); }
+  #waitMsg { font-size: 13px; color: rgba(255,255,255,0.4); text-align: center; line-height: 1.8; }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<div id="lobby">
+  <h1>PONG</h1>
+  <div id="joinSection" style="display:flex;flex-direction:column;align-items:center;gap:14px">
+    <p>Raum-Namen eingeben und teile ihn mit deinem Freund — beide müssen denselben Namen benutzen.</p>
+    <input id="roomInput" placeholder="z.B. arena1" maxlength="32" autocomplete="off" />
+    <button id="joinBtn">Beitreten</button>
+  </div>
+  <div id="waitSection" class="hidden" style="display:flex;flex-direction:column;align-items:center;gap:14px">
+    <div id="waitMsg">Verbinde…</div>
+  </div>
+</div>
+
+<div id="scoreboard">
+  <span id="s1">0</span>
+  <span style="color:rgba(255,255,255,0.2)">:</span>
+  <span id="s2">0</span>
+</div>
+<canvas id="canvas" width="560" height="360"></canvas>
+<div id="statusbar">
+  <div id="dot"></div>
+  <span id="statusLabel">nicht verbunden</span>
+</div>
+
+<script>
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// HIER deine Render-URL eintragen (nach dem Deploy):
+const SERVER_URL = "wss://DEINE-APP.onrender.com";
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+const W = canvas.width, H = canvas.height;
+const PAD = 12, PW = 10, PH = 70, BALL = 9;
+
+let ws = null;
+let myPlayer = 0;
+let running = false;
+let score = [0, 0];
+let p1y = H/2 - PH/2, p2y = H/2 - PH/2;
+let bx = W/2, by = H/2;
+let localVx = 4.5, localVy = 3.2;
+let mouseY = H/2;
+let animId = null;
+
+// Cheat-Modus
+let cheatMode = false;
+let cheatY = H/2;
+let cheatJitterTick = 0;
+let cheatJitterOffset = 0;
+let lastMouseMove = 0;
+
+function setStatus(label, dotClass) {
+  document.getElementById('statusLabel').textContent = label;
+  const dot = document.getElementById('dot');
+  dot.className = dotClass || '';
+}
+
+function updateScore() {
+  document.getElementById('s1').textContent = score[0];
+  document.getElementById('s2').textContent = score[1];
+}
+
+function hideLobby() {
+  document.getElementById('lobby').classList.add('hidden');
+}
+
+function send(obj) {
+  if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(obj));
+}
+
+function connectToRoom(roomName) {
+  setStatus('verbinde…', '');
+  ws = new WebSocket(SERVER_URL);
+
+  ws.onopen = () => {
+    setStatus('verbunden', 'connected');
+    send({ type: 'join', room: roomName });
+  };
+
+  ws.onmessage = (e) => {
+    const msg = JSON.parse(e.data);
+
+    if (msg.type === 'assigned') {
+      myPlayer = msg.player;
+      if (msg.state) { p1y = msg.state.p1y; p2y = msg.state.p2y; score = msg.state.score; updateScore(); }
+      if (myPlayer === 1) {
+        document.getElementById('waitMsg').textContent = 'Du bist Spieler 1 (lila)\nWarte auf Spieler 2…';
+        setStatus('spieler 1 — warte auf gegner', 'connected');
+      } else if (myPlayer === 2) {
+        hideLobby();
+        setStatus('spieler 2', 'connected');
+      } else {
+        document.getElementById('waitMsg').textContent = 'Raum voll — nur zuschauen';
+      }
+    }
+
+    if (msg.type === 'playerCount') {
+      if (msg.count >= 2 && myPlayer === 1) {
+        hideLobby();
+        setStatus('spieler 1', 'connected');
+        startGame();
+      }
+      if (msg.count < 2 && myPlayer === 1) {
+        setStatus('gegner getrennt', 'connected');
+      }
+    }
+
+    if (msg.type === 'move') {
+      if (msg.player === 1 && myPlayer !== 1) p1y = msg.y;
+      if (msg.player === 2 && myPlayer !== 2) p2y = msg.y;
+    }
+
+    if (msg.type === 'ball' && myPlayer !== 1) {
+      bx = msg.bx; by = msg.by; localVx = msg.vx; localVy = msg.vy;
+    }
+
+    if (msg.type === 'score') { score = msg.score; updateScore(); }
+    if (msg.type === 'start') {
+      running = true; score = [0, 0]; updateScore();
+      if (!animId) loop();
+    }
+  };
+
+  ws.onclose = () => setStatus('getrennt — seite neu laden', '');
+  ws.onerror = () => setStatus('verbindungsfehler', '');
+}
+
+function resetBall(dir) {
+  bx = W/2; by = H/2;
+  const angle = (Math.random() * 40 - 20) * Math.PI / 180;
+  const spd = 4.5;
+  localVx = dir * spd * Math.cos(angle);
+  localVy = spd * Math.sin(angle);
+  if (Math.random() > 0.5) localVy *= -1;
+  send({ type: 'ball', bx, by, vx: localVx, vy: localVy });
+}
+
+function startGame() {
+  running = true; score = [0, 0]; updateScore();
+  p1y = H/2 - PH/2; p2y = H/2 - PH/2; cheatY = p1y;
+  resetBall(1);
+  send({ type: 'start' });
+  if (!animId) loop();
+}
+
+function cheatAI() {
+  cheatJitterTick++;
+  if (cheatJitterTick % 7 === 0) cheatJitterOffset = (Math.random() - 0.5) * 7;
+  const target = by - PH/2 + cheatJitterOffset;
+  const diff = target - cheatY;
+  cheatY += Math.sign(diff) * Math.min(Math.abs(diff), 5.5);
+  cheatY = Math.max(0, Math.min(H - PH, cheatY));
+  p1y = cheatY;
+  if (Date.now() - lastMouseMove > 180) mouseY = cheatY + PH/2;
+}
+
+function update() {
+  if (!running) return;
+
+  if (myPlayer === 1) {
+    if (cheatMode) cheatAI();
+    bx += localVx; by += localVy;
+    if (by - BALL < 0) { by = BALL; localVy = Math.abs(localVy); }
+    if (by + BALL > H) { by = H - BALL; localVy = -Math.abs(localVy); }
+
+    if (bx - BALL < PAD + PW && bx > PAD && by > p1y && by < p1y + PH) {
+      bx = PAD + PW + BALL;
+      let rel = (by - (p1y + PH/2)) / (PH/2);
+      let spd = Math.min(Math.sqrt(localVx*localVx+localVy*localVy) + 0.3, 11);
+      localVx = spd * Math.cos(rel * 60 * Math.PI/180);
+      localVy = spd * Math.sin(rel * 60 * Math.PI/180);
+      send({ type: 'ball', bx, by, vx: localVx, vy: localVy });
+    }
+    if (bx + BALL > W - PAD - PW && bx < W - PAD && by > p2y && by < p2y + PH) {
+      bx = W - PAD - PW - BALL;
+      let rel = (by - (p2y + PH/2)) / (PH/2);
+      let spd = Math.min(Math.sqrt(localVx*localVx+localVy*localVy) + 0.3, 11);
+      localVx = -(spd * Math.cos(rel * 60 * Math.PI/180));
+      localVy = spd * Math.sin(rel * 60 * Math.PI/180);
+      send({ type: 'ball', bx, by, vx: localVx, vy: localVy });
+    }
+
+    if (bx - BALL < 0) { score[1]++; updateScore(); send({ type: 'score', score }); resetBall(1); }
+    if (bx + BALL > W) { score[0]++; updateScore(); send({ type: 'score', score }); resetBall(-1); }
+
+    send({ type: 'ball', bx, by, vx: localVx, vy: localVy });
+  }
+
+  if (myPlayer === 2) {
+    bx += localVx; by += localVy;
+    if (by - BALL < 0) { by = BALL; localVy = Math.abs(localVy); }
+    if (by + BALL > H) { by = H - BALL; localVy = -Math.abs(localVy); }
+  }
+}
+
+function draw() {
+  ctx.clearRect(0, 0, W, H);
+  ctx.fillStyle = '#0a0a0f'; ctx.fillRect(0, 0, W, H);
+  ctx.setLineDash([6, 8]); ctx.strokeStyle = 'rgba(255,255,255,0.07)'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(W/2, 0); ctx.lineTo(W/2, H); ctx.stroke(); ctx.setLineDash([]);
+  ctx.fillStyle = '#7F77DD'; ctx.beginPath(); ctx.roundRect(PAD, p1y, PW, PH, 3); ctx.fill();
+  ctx.fillStyle = '#1D9E75'; ctx.beginPath(); ctx.roundRect(W-PAD-PW, p2y, PW, PH, 3); ctx.fill();
+  ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(bx, by, BALL, 0, Math.PI*2); ctx.fill();
+  const g = ctx.createRadialGradient(bx, by, 0, bx, by, BALL*2.5);
+  g.addColorStop(0, 'rgba(255,255,255,0.15)'); g.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = g; ctx.beginPath(); ctx.arc(bx, by, BALL*2.5, 0, Math.PI*2); ctx.fill();
+}
+
+function loop() { update(); draw(); animId = requestAnimationFrame(loop); }
+
+canvas.addEventListener('mousemove', e => {
+  const rect = canvas.getBoundingClientRect();
+  mouseY = e.clientY - rect.top;
+  lastMouseMove = Date.now();
+  if (cheatMode) return;
+  const ny = Math.max(0, Math.min(H - PH, mouseY - PH/2));
+  if (myPlayer === 1) { p1y = ny; send({ type: 'move', player: 1, y: p1y }); }
+  if (myPlayer === 2) { p2y = ny; send({ type: 'move', player: 2, y: p2y }); }
+});
+
+canvas.addEventListener('touchmove', e => {
+  e.preventDefault();
+  const rect = canvas.getBoundingClientRect();
+  mouseY = e.touches[0].clientY - rect.top;
+  lastMouseMove = Date.now();
+  if (cheatMode) return;
+  const ny = Math.max(0, Math.min(H - PH, mouseY - PH/2));
+  if (myPlayer === 1) { p1y = ny; send({ type: 'move', player: 1, y: p1y }); }
+  if (myPlayer === 2) { p2y = ny; send({ type: 'move', player: 2, y: p2y }); }
+}, { passive: false });
+
+document.addEventListener('keydown', e => {
+  if ((e.key === 'c' || e.key === 'C') && myPlayer === 1) {
+    cheatMode = !cheatMode;
+    cheatY = p1y;
+    if (cheatMode) {
+      document.getElementById('dot').className = 'cheat';
+      document.getElementById('statusLabel').textContent = 'ki-übernahme aktiv';
+    } else {
+      document.getElementById('dot').className = 'connected';
+      document.getElementById('statusLabel').textContent = 'spieler 1';
+    }
+  }
+});
+
+document.getElementById('joinBtn').addEventListener('click', () => {
+  const room = document.getElementById('roomInput').value.trim();
+  if (!room) return;
+  document.getElementById('joinSection').classList.add('hidden');
+  document.getElementById('waitSection').classList.remove('hidden');
+  connectToRoom(room);
+});
+document.getElementById('roomInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('joinBtn').click();
+});
+
+draw();
+</script>
+</body>
+</html>
