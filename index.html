@@ -10,17 +10,17 @@
     background: #0a0a0f;
     display: flex; flex-direction: column;
     align-items: center; justify-content: center;
-    min-height: 100vh;
+    min-height: 100vh; min-height: 100dvh;
     font-family: monospace; color: #fff;
-    user-select: none;
+    user-select: none; overflow: hidden;
   }
   #scoreboard {
     display: flex; gap: 48px;
     font-size: 32px; font-weight: 500;
     margin-bottom: 12px; letter-spacing: 3px;
   }
-  #canvas { border: 1px solid rgba(255,255,255,0.12); border-radius: 4px; display: block; cursor: none; }
-  #statusbar { margin-top: 10px; font-size: 12px; color: rgba(255,255,255,0.35); display: flex; gap: 16px; align-items: center; }
+  #canvas { border: 1px solid rgba(255,255,255,0.12); border-radius: 4px; display: block; cursor: none; touch-action: none; }
+  #statusbar { margin-top: 8px; font-size: 12px; color: rgba(255,255,255,0.35); display: flex; gap: 16px; align-items: center; }
   #dot { width: 7px; height: 7px; border-radius: 50%; background: rgba(255,255,255,0.2); transition: background 0.4s; }
   #dot.connected { background: #1D9E75; }
   #dot.cheat { background: #7F77DD; }
@@ -29,23 +29,39 @@
     background: rgba(10,10,15,0.95);
     display: flex; flex-direction: column;
     align-items: center; justify-content: center; gap: 18px;
+    padding: 24px;
   }
   #lobby h1 { font-size: 22px; font-weight: 500; letter-spacing: 2px; }
-  #lobby p { font-size: 13px; color: rgba(255,255,255,0.45); text-align: center; max-width: 320px; line-height: 1.7; }
+  #lobby p { font-size: 13px; color: rgba(255,255,255,0.45); text-align: center; max-width: 300px; line-height: 1.7; }
   #lobby input {
     background: transparent; border: 0.5px solid rgba(255,255,255,0.25);
-    border-radius: 6px; padding: 8px 16px; color: #fff;
-    font-family: monospace; font-size: 14px; width: 260px; outline: none;
+    border-radius: 6px; padding: 12px 16px; color: #fff;
+    font-family: monospace; font-size: 16px; width: 260px; outline: none;
     text-align: center;
   }
   #lobby input:focus { border-color: rgba(255,255,255,0.5); }
   #lobby button {
-    padding: 9px 32px; background: transparent;
+    padding: 12px 36px; background: transparent;
     border: 0.5px solid rgba(255,255,255,0.3); border-radius: 6px;
-    color: #fff; font-family: monospace; font-size: 13px; cursor: pointer;
+    color: #fff; font-family: monospace; font-size: 15px; cursor: pointer;
   }
-  #lobby button:hover { background: rgba(255,255,255,0.08); }
+  #lobby button:active { background: rgba(255,255,255,0.08); }
   #waitMsg { font-size: 13px; color: rgba(255,255,255,0.4); text-align: center; line-height: 1.8; }
+  #touchControl {
+    display: none; width: 100%; max-width: 560px;
+    padding: 10px 16px 4px; flex-direction: column; align-items: center; gap: 4px;
+  }
+  #touchControl label { font-size: 11px; color: rgba(255,255,255,0.25); letter-spacing: 1px; }
+  #touchSlider {
+    width: 100%; height: 48px;
+    -webkit-appearance: none; appearance: none;
+    background: rgba(255,255,255,0.07); border-radius: 24px; outline: none;
+  }
+  #touchSlider::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 48px; height: 48px;
+    border-radius: 50%; background: #7F77DD; border: 2px solid rgba(255,255,255,0.3);
+  }
+  #touchSlider.p2::-webkit-slider-thumb { background: #1D9E75; }
   .hidden { display: none !important; }
 </style>
 </head>
@@ -69,6 +85,10 @@
   <span id="s2">0</span>
 </div>
 <canvas id="canvas" width="560" height="360"></canvas>
+<div id="touchControl">
+  <input type="range" id="touchSlider" min="0" max="290" value="145" />
+  <label>SCHLÄGER BEWEGEN</label>
+</div>
 <div id="statusbar">
   <div id="dot"></div>
   <span id="statusLabel">nicht verbunden</span>
@@ -82,8 +102,28 @@ const SERVER_URL = "wss://pong-1-u1eg.onrender.com";
 
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
-const W = canvas.width, H = canvas.height;
+const W = 560, H = 360;
 const PAD = 12, PW = 10, PH = 70, BALL = 9;
+
+const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent) || window.innerWidth < 600;
+
+function resizeCanvas() {
+  const maxW = Math.min(window.innerWidth - 16, W);
+  const maxH = isMobile ? window.innerHeight * 0.52 : window.innerHeight - 140;
+  const scale = Math.min(maxW / W, maxH / H);
+  canvas.style.width = Math.floor(W * scale) + 'px';
+  canvas.style.height = Math.floor(H * scale) + 'px';
+  if (isMobile) {
+    const tc = document.getElementById('touchControl');
+    tc.style.display = 'flex';
+    tc.style.maxWidth = Math.floor(W * scale) + 'px';
+    document.getElementById('scoreboard').style.fontSize = '22px';
+    document.getElementById('scoreboard').style.gap = '28px';
+    document.getElementById('scoreboard').style.marginBottom = '6px';
+  }
+}
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
 
 let ws = null;
 let myPlayer = 0;
@@ -142,6 +182,7 @@ function connectToRoom(roomName) {
       } else if (myPlayer === 2) {
         hideLobby();
         setStatus('spieler 2', 'connected');
+        updateSliderForPlayer();
       } else {
         document.getElementById('waitMsg').textContent = 'Raum voll — nur zuschauen';
       }
@@ -306,6 +347,18 @@ document.getElementById('joinBtn').addEventListener('click', () => {
 document.getElementById('roomInput').addEventListener('keydown', e => {
   if (e.key === 'Enter') document.getElementById('joinBtn').click();
 });
+
+const touchSlider = document.getElementById('touchSlider');
+touchSlider.addEventListener('input', () => {
+  const ny = parseInt(touchSlider.value);
+  if (cheatMode) return;
+  if (myPlayer === 1) { p1y = ny; send({ type: 'move', player: 1, y: p1y }); }
+  if (myPlayer === 2) { p2y = ny; send({ type: 'move', player: 2, y: p2y }); }
+});
+
+function updateSliderForPlayer() {
+  if (myPlayer === 2) touchSlider.classList.add('p2');
+}
 
 draw();
 </script>
