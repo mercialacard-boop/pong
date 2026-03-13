@@ -94,13 +94,16 @@ input[type=range]::-webkit-slider-thumb {
 #dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.1); flex-shrink: 0; transition: background 0.3s; }
 #dot.on { background: #1D9E75; }
 #dot.cheat { background: #7F77DD; }
-#mobileControls { display: none; width: 100%; flex-direction: column; align-items: center; padding: 10px 16px 0; }
+#mobileControls { display: none; }
 #touchSlider {
-  width: 100%; height: 48px; -webkit-appearance: none; appearance: none;
-  background: rgba(255,255,255,0.07); border-radius: 24px; outline: none;
+  height: 100%; width: 44px;
+  -webkit-appearance: none; appearance: none;
+  writing-mode: vertical-lr; direction: rtl;
+  background: rgba(255,255,255,0.07); border-radius: 22px; outline: none;
+  cursor: pointer;
 }
 #touchSlider::-webkit-slider-thumb {
-  -webkit-appearance: none; width: 52px; height: 52px;
+  -webkit-appearance: none; width: 44px; height: 44px;
   border-radius: 50%; background: #7F77DD; border: 2px solid rgba(255,255,255,0.2);
 }
 #touchSlider.p2::-webkit-slider-thumb { background: #1D9E75; }
@@ -185,14 +188,16 @@ input[type=range]::-webkit-slider-thumb {
   <span style="color:rgba(255,255,255,0.12)">:</span>
   <span id="s2">0</span>
 </div>
-<div style="position:relative;display:inline-block;line-height:0;">
-  <canvas id="canvas" width="560" height="360"></canvas>
-  <div id="zone-tl" style="position:absolute;top:0;left:0;width:70px;height:70px;z-index:5;"></div>
-  <div id="zone-tr" style="position:absolute;top:0;right:0;width:70px;height:70px;z-index:5;"></div>
-  <div id="zone-br" style="position:absolute;bottom:0;right:0;width:70px;height:70px;z-index:5;"></div>
-</div>
-<div id="mobileControls">
-  <input type="range" id="touchSlider" min="0" max="290" value="145"/>
+<div id="gameArea" style="display:flex;align-items:center;gap:8px;">
+  <div id="mobileControls" style="order:0;">
+    <input type="range" id="touchSlider" min="0" max="290" value="145"/>
+  </div>
+  <div style="position:relative;display:inline-block;line-height:0;">
+    <canvas id="canvas" width="560" height="360"></canvas>
+    <div id="zone-tl" style="position:absolute;top:0;left:0;width:70px;height:70px;z-index:5;"></div>
+    <div id="zone-tr" style="position:absolute;top:0;right:0;width:70px;height:70px;z-index:5;"></div>
+    <div id="zone-br" style="position:absolute;bottom:0;right:0;width:70px;height:70px;z-index:5;"></div>
+  </div>
 </div>
 <div id="statusbar"><div id="dot"></div><span id="statusLabel"></span></div>
 <button id="menuBtn" onclick="backToMenu()">← menü</button>
@@ -236,16 +241,29 @@ const $ = id => document.getElementById(id);
 
 // ── RESIZE ──
 function resize() {
-  const maxW = Math.min(window.innerWidth - 16, W);
-  const maxH = isMobile ? window.innerHeight * 0.46 : window.innerHeight - 150;
+  const sliderW = isMobile ? 52 : 0;
+  const maxW = Math.min(window.innerWidth - 16 - sliderW, W);
+  const maxH = isMobile ? window.innerHeight * 0.55 : window.innerHeight - 150;
   const s = Math.min(maxW / W, maxH / H);
-  canvas.style.width = Math.floor(W * s) + 'px';
-  canvas.style.height = Math.floor(H * s) + 'px';
+  const cw = Math.floor(W * s), ch = Math.floor(H * s);
+  canvas.style.width = cw + 'px';
+  canvas.style.height = ch + 'px';
   if (isMobile) {
-    $('mobileControls').style.display = 'flex';
-    $('mobileControls').style.maxWidth = Math.floor(W * s) + 'px';
+    const mc = $('mobileControls');
+    mc.style.display = 'flex';
+    mc.style.height = ch + 'px';
+    $('touchSlider').style.height = ch + 'px';
     $('scoreboard').style.cssText = 'display:flex;gap:28px;font-size:22px;font-weight:500;margin-bottom:6px;letter-spacing:3px;min-height:36px;';
-    $('touchSlider').style.maxWidth = Math.floor(W * s) + 'px';
+  }
+}
+
+function updateSliderSide() {
+  const mc = $('mobileControls');
+  // Player 1 = left side (order:0), Player 2 = right side (order:2)
+  if (myPlayer === 2) {
+    mc.style.order = '2';
+  } else {
+    mc.style.order = '0';
   }
 }
 resize();
@@ -317,6 +335,7 @@ function initGame(mode) {
   $('dot').className = '';
   $('statusLabel').textContent = '';
   $('winBanner').style.display = 'none';
+  if (isMobile) updateSliderSide();
   resetBallLocal(1);
   if (animId) cancelAnimationFrame(animId);
   animId = requestAnimationFrame(loop);
@@ -414,6 +433,7 @@ function handleMPMsg(msg) {
       showOnly(null);
       setStatus('spieler 2', 'on');
       $('touchSlider').classList.add('p2');
+      updateSliderSide();
       if (!animId) animId = requestAnimationFrame(loop);
     } else {
       $('waitMsg').textContent = 'Raum voll';
