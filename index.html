@@ -52,12 +52,6 @@ body {
   background: #7F77DD; border: 2px solid rgba(255,255,255,0.3);
 }
 #touchSlider.p2::-webkit-slider-thumb { background: #1D9E75; }
-#cheatBtn {
-  padding: 10px 28px; background: transparent; border: 0.5px solid rgba(127,119,221,0.4);
-  border-radius: 6px; color: rgba(127,119,221,0.7); font-family: monospace; font-size: 13px; cursor: pointer;
-}
-#cheatBtn.active { background: rgba(127,119,221,0.15); color: #afa9ec; border-color: #7F77DD; }
-
 .hidden { display: none !important; }
 </style>
 </head>
@@ -76,11 +70,14 @@ body {
 </div>
 
 <div id="scoreboard"><span id="s1">0</span><span style="color:rgba(255,255,255,0.2)">:</span><span id="s2">0</span></div>
-<canvas id="canvas" width="560" height="360"></canvas>
+<div id="canvasWrap" style="position:relative;display:inline-block;line-height:0;">
+  <canvas id="canvas" width="560" height="360"></canvas>
+  <div id="zone-tl" style="position:absolute;top:0;left:0;width:60px;height:60px;z-index:10;"></div>
+  <div id="zone-br" style="position:absolute;bottom:0;right:0;width:60px;height:60px;z-index:10;"></div>
+</div>
 
 <div id="mobileControls">
   <input type="range" id="touchSlider" min="0" max="290" value="145"/>
-  <button id="cheatBtn">KI-Modus</button>
 </div>
 
 <div id="statusbar">
@@ -238,19 +235,48 @@ document.getElementById('touchSlider').addEventListener('input', e => {
 function toggleCheat() {
   cheatMode = !cheatMode;
   cheatY = myPlayer === 1 ? p1y : p2y;
-  const btn = document.getElementById('cheatBtn');
   if (cheatMode) {
-    btn.classList.add('active'); btn.textContent = 'KI-Modus AN';
     document.getElementById('dot').className = 'cheat';
     document.getElementById('statusLabel').textContent = 'ki-übernahme aktiv';
   } else {
-    btn.classList.remove('active'); btn.textContent = 'KI-Modus';
     document.getElementById('dot').className = 'on';
     document.getElementById('statusLabel').textContent = 'spieler ' + myPlayer;
   }
 }
 
-document.getElementById('cheatBtn').addEventListener('click', toggleCheat);
+// Invisible touch zones (top-left + bottom-right corners of canvas)
+let touchZoneTimer = null;
+function setupTouchZones() {
+  const tl = document.getElementById('zone-tl');
+  const br = document.getElementById('zone-br');
+  let tlActive = false, brActive = false;
+
+  function checkBothTouched() {
+    if (tlActive && brActive) toggleCheat();
+  }
+
+  [tl, br].forEach((zone, i) => {
+    zone.addEventListener('touchstart', e => {
+      e.preventDefault();
+      if (i === 0) tlActive = true; else brActive = true;
+      checkBothTouched();
+    }, { passive: false });
+    zone.addEventListener('touchend', () => {
+      if (i === 0) tlActive = false; else brActive = false;
+    });
+  });
+}
+setupTouchZones();
+
+// Pause cheat when tab is hidden
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden && cheatMode) {
+    cheatMode = false;
+    document.getElementById('dot').className = 'on';
+    document.getElementById('statusLabel').textContent = 'spieler ' + myPlayer;
+  }
+});
+
 document.addEventListener('keydown', e => {
   if ((e.key === 'c' || e.key === 'C') && myPlayer !== 0) toggleCheat();
 });
