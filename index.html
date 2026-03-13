@@ -6,51 +6,57 @@
 <title>Pong</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 100%; height: 100%; }
 body {
   background: #0a0a0f; display: flex; flex-direction: column;
   align-items: center; justify-content: center;
-  min-height: 100vh; min-height: 100dvh;
-  font-family: monospace; color: #fff; user-select: none; overflow: hidden;
-  position: relative;
+  font-family: monospace; color: #fff; user-select: none;
+  position: relative; overflow: hidden;
 }
+#lobby {
+  position: fixed; inset: 0; z-index: 100;
+  background: #0a0a0f;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 18px; padding: 24px;
+}
+#lobby h1 { font-size: 24px; font-weight: 500; letter-spacing: 3px; }
+#lobby p { font-size: 13px; color: rgba(255,255,255,0.45); text-align: center; max-width: 300px; line-height: 1.8; }
+#lobby input {
+  background: transparent; border: 1px solid rgba(255,255,255,0.2); border-radius: 8px;
+  padding: 12px 16px; color: #fff; font-family: monospace; font-size: 16px;
+  width: 260px; outline: none; text-align: center;
+}
+#lobby input:focus { border-color: rgba(255,255,255,0.5); }
+#joinBtn {
+  padding: 12px 40px; background: transparent; border: 1px solid rgba(255,255,255,0.25);
+  border-radius: 8px; color: #fff; font-family: monospace; font-size: 15px; cursor: pointer;
+}
+#joinBtn:active { background: rgba(255,255,255,0.08); }
+#waitMsg { font-size: 13px; color: rgba(255,255,255,0.4); text-align: center; line-height: 2; }
+#errorMsg { font-size: 12px; color: #E24B4A; text-align: center; max-width: 280px; line-height: 1.6; display: none; }
+#retryBtn {
+  padding: 10px 28px; background: transparent; border: 1px solid rgba(226,75,74,0.4);
+  border-radius: 8px; color: #E24B4A; font-family: monospace; font-size: 13px; cursor: pointer; display: none;
+}
+
 #scoreboard {
   display: flex; gap: 48px; font-size: 32px; font-weight: 500;
   margin-bottom: 8px; letter-spacing: 3px;
 }
 #canvas { border: 1px solid rgba(255,255,255,0.12); border-radius: 4px; display: block; touch-action: none; }
-#statusbar { margin-top: 8px; font-size: 12px; color: rgba(255,255,255,0.35); display: flex; gap: 12px; align-items: center; }
-#dot { width: 7px; height: 7px; border-radius: 50%; background: rgba(255,255,255,0.2); transition: background 0.4s; flex-shrink: 0; }
+#statusbar { margin-top: 8px; font-size: 12px; color: rgba(255,255,255,0.3); display: flex; gap: 10px; align-items: center; }
+#dot { width: 7px; height: 7px; border-radius: 50%; background: rgba(255,255,255,0.15); flex-shrink: 0; transition: background 0.3s; }
 #dot.on { background: #1D9E75; }
 #dot.cheat { background: #7F77DD; }
 
-/* Lobby */
-#lobby {
-  position: absolute; inset: 0; background: rgba(10,10,15,0.95);
-  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; padding: 24px;
-}
-#lobby h1 { font-size: 22px; font-weight: 500; letter-spacing: 2px; }
-#lobby p { font-size: 13px; color: rgba(255,255,255,0.45); text-align: center; max-width: 300px; line-height: 1.7; }
-#lobby input {
-  background: transparent; border: 0.5px solid rgba(255,255,255,0.25); border-radius: 6px;
-  padding: 12px 16px; color: #fff; font-family: monospace; font-size: 16px; width: 260px; outline: none; text-align: center;
-}
-#lobby input:focus { border-color: rgba(255,255,255,0.5); }
-#lobby button {
-  padding: 12px 36px; background: transparent; border: 0.5px solid rgba(255,255,255,0.3);
-  border-radius: 6px; color: #fff; font-family: monospace; font-size: 15px; cursor: pointer;
-}
-#lobby button:active { background: rgba(255,255,255,0.08); }
-#waitMsg { font-size: 13px; color: rgba(255,255,255,0.4); text-align: center; line-height: 1.9; }
-
-/* Mobile slider */
-#mobileControls { display: none; width: 100%; flex-direction: column; align-items: center; gap: 10px; padding: 10px 16px 0; }
+#mobileControls { display: none; width: 100%; flex-direction: column; align-items: center; padding: 10px 16px 0; }
 #touchSlider {
   width: 100%; height: 48px; -webkit-appearance: none; appearance: none;
   background: rgba(255,255,255,0.07); border-radius: 24px; outline: none;
 }
 #touchSlider::-webkit-slider-thumb {
-  -webkit-appearance: none; width: 52px; height: 52px; border-radius: 50%;
-  background: #7F77DD; border: 2px solid rgba(255,255,255,0.3);
+  -webkit-appearance: none; width: 52px; height: 52px;
+  border-radius: 50%; background: #7F77DD; border: 2px solid rgba(255,255,255,0.25);
 }
 #touchSlider.p2::-webkit-slider-thumb { background: #1D9E75; }
 .hidden { display: none !important; }
@@ -61,20 +67,27 @@ body {
 <div id="lobby">
   <h1>PONG</h1>
   <div id="joinSection" style="display:flex;flex-direction:column;align-items:center;gap:14px">
-    <p>Raum-Namen eingeben — teile ihn mit deinem Freund. Beide müssen denselben Namen benutzen.</p>
-    <input id="roomInput" placeholder="z.B. arena1" maxlength="32" autocomplete="off"/>
+    <p>Raum-Namen eingeben — teile ihn mit deinem Freund.</p>
+    <input id="roomInput" placeholder="z.B. arena1" maxlength="32" autocomplete="off" spellcheck="false"/>
     <button id="joinBtn">Beitreten</button>
+    <div id="errorMsg"></div>
+    <button id="retryBtn">Nochmal versuchen</button>
   </div>
   <div id="waitSection" class="hidden" style="display:flex;flex-direction:column;align-items:center;gap:14px">
-    <div id="waitMsg">Verbinde…</div>
+    <div id="waitMsg">Verbinde mit Server…</div>
   </div>
 </div>
 
-<div id="scoreboard"><span id="s1">0</span><span style="color:rgba(255,255,255,0.2)">:</span><span id="s2">0</span></div>
-<div id="canvasWrap" style="position:relative;display:inline-block;line-height:0;">
+<div id="scoreboard">
+  <span id="s1">0</span>
+  <span style="color:rgba(255,255,255,0.15)">:</span>
+  <span id="s2">0</span>
+</div>
+
+<div style="position:relative;display:inline-block;line-height:0;">
   <canvas id="canvas" width="560" height="360"></canvas>
-  <div id="zone-tl" style="position:absolute;top:0;left:0;width:60px;height:60px;z-index:10;"></div>
-  <div id="zone-br" style="position:absolute;bottom:0;right:0;width:60px;height:60px;z-index:10;"></div>
+  <div id="zone-tl" style="position:absolute;top:0;left:0;width:70px;height:70px;z-index:5;"></div>
+  <div id="zone-br" style="position:absolute;bottom:0;right:0;width:70px;height:70px;z-index:5;"></div>
 </div>
 
 <div id="mobileControls">
@@ -88,24 +101,24 @@ body {
 
 <script>
 const SERVER_URL = "wss://pong-1-u1eg.onrender.com";
+const W = 560, H = 360, PAD = 12, PW = 10, PH = 70, BALL = 9;
 
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
-const W = 560, H = 360, PAD = 12, PW = 10, PH = 70, BALL = 9;
-
 const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent) || window.innerWidth < 640;
 
 function resize() {
   const maxW = Math.min(window.innerWidth - 16, W);
-  const maxH = isMobile ? window.innerHeight * 0.50 : window.innerHeight - 130;
-  const scale = Math.min(maxW / W, maxH / H);
-  canvas.style.width = Math.floor(W * scale) + 'px';
-  canvas.style.height = Math.floor(H * scale) + 'px';
+  const maxH = isMobile ? window.innerHeight * 0.48 : window.innerHeight - 140;
+  const s = Math.min(maxW / W, maxH / H);
+  canvas.style.width = Math.floor(W * s) + 'px';
+  canvas.style.height = Math.floor(H * s) + 'px';
   if (isMobile) {
     const mc = document.getElementById('mobileControls');
     mc.style.display = 'flex';
-    mc.style.maxWidth = Math.floor(W * scale) + 'px';
-    document.getElementById('scoreboard').style.cssText = 'font-size:22px;gap:28px;margin-bottom:6px;display:flex;letter-spacing:3px;font-weight:500;';
+    mc.style.maxWidth = Math.floor(W * s) + 'px';
+    document.getElementById('scoreboard').style.cssText =
+      'display:flex;gap:28px;font-size:22px;font-weight:500;margin-bottom:6px;letter-spacing:3px;';
   }
 }
 resize();
@@ -114,30 +127,56 @@ window.addEventListener('resize', resize);
 let ws = null, myPlayer = 0, animId = null;
 let p1y = H/2-PH/2, p2y = H/2-PH/2, bx = W/2, by = H/2;
 let score = [0, 0];
+let cheatMode = false, cheatY = H/2-PH/2, cheatJT = 0, cheatJO = 0;
 
-// Cheat state
-let cheatMode = false;
-let cheatY = H/2-PH/2;
-let cheatJitterTick = 0, cheatJitterOffset = 0;
+const $ = id => document.getElementById(id);
 
-function setStatus(label, dotClass) {
-  document.getElementById('statusLabel').textContent = label;
-  document.getElementById('dot').className = dotClass || '';
+function setStatus(label, cls) {
+  $('statusLabel').textContent = label;
+  $('dot').className = cls || '';
 }
 function updateScore() {
-  document.getElementById('s1').textContent = score[0];
-  document.getElementById('s2').textContent = score[1];
+  $('s1').textContent = score[0];
+  $('s2').textContent = score[1];
 }
-function hideLobby() { document.getElementById('lobby').classList.add('hidden'); }
-function send(obj) { if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(obj)); }
+function hideLobby() { $('lobby').classList.add('hidden'); }
+function send(obj) { if (ws && ws.readyState === 1) ws.send(JSON.stringify(obj)); }
+
+function showError(msg) {
+  $('errorMsg').textContent = msg;
+  $('errorMsg').style.display = 'block';
+  $('retryBtn').style.display = 'block';
+  $('waitSection').classList.add('hidden');
+  $('joinSection').classList.remove('hidden');
+  $('joinSection').querySelector('p').style.display = 'none';
+}
 
 function connectToRoom(room) {
+  $('waitMsg').textContent = 'Verbinde mit Server…';
   setStatus('verbinde…', '');
-  ws = new WebSocket(SERVER_URL);
-  ws.onopen = () => { setStatus('verbunden', 'on'); send({ type: 'join', room }); };
-  ws.onmessage = (e) => handleMsg(JSON.parse(e.data));
-  ws.onclose = () => setStatus('getrennt — seite neu laden', '');
-  ws.onerror = () => setStatus('verbindungsfehler', '');
+
+  const timeout = setTimeout(() => {
+    ws && ws.close();
+    showError('Server antwortet nicht. Er schläft möglicherweise — warte 30 Sekunden und versuche es nochmal.');
+  }, 12000);
+
+  try { ws = new WebSocket(SERVER_URL); } catch(e) { clearTimeout(timeout); showError('Verbindung fehlgeschlagen.'); return; }
+
+  ws.onopen = () => {
+    clearTimeout(timeout);
+    setStatus('verbunden', 'on');
+    send({ type: 'join', room });
+  };
+  ws.onmessage = e => handleMsg(JSON.parse(e.data));
+  ws.onerror = () => { clearTimeout(timeout); };
+  ws.onclose = (ev) => {
+    clearTimeout(timeout);
+    if (myPlayer === 0) {
+      showError('Verbindung getrennt (Code ' + ev.code + '). Server möglicherweise nicht erreichbar.');
+    } else {
+      setStatus('getrennt — seite neu laden', '');
+    }
+  };
 }
 
 function handleMsg(msg) {
@@ -145,14 +184,15 @@ function handleMsg(msg) {
     myPlayer = msg.player;
     if (msg.state) { p1y = msg.state.p1y; p2y = msg.state.p2y; score = msg.state.score; updateScore(); }
     if (myPlayer === 1) {
-      document.getElementById('waitMsg').innerHTML = 'Du bist Spieler 1 (lila)<br>Warte auf Spieler 2…';
-      setStatus('spieler 1 — warte auf gegner', 'on');
+      $('waitMsg').innerHTML = 'Du bist Spieler 1 (lila)<br>Warte auf Spieler 2…';
+      setStatus('spieler 1 — warte', 'on');
     } else if (myPlayer === 2) {
       hideLobby();
       setStatus('spieler 2', 'on');
-      document.getElementById('touchSlider').classList.add('p2');
+      $('touchSlider').classList.add('p2');
+      if (!animId) animId = requestAnimationFrame(loop);
     } else {
-      document.getElementById('waitMsg').textContent = 'Raum voll';
+      $('waitMsg').textContent = 'Raum voll — nur zuschauen';
     }
   }
   if (msg.type === 'playerCount') {
@@ -165,23 +205,27 @@ function handleMsg(msg) {
   }
   if (msg.type === 'tick') {
     bx = msg.bx; by = msg.by;
-    p1y = msg.p1y; p2y = msg.p2y;
+    if (!cheatMode || myPlayer === 0) {
+      if (myPlayer !== 1) p1y = msg.p1y;
+      if (myPlayer !== 2) p2y = msg.p2y;
+    }
+    if (myPlayer === 1 && !cheatMode) p2y = msg.p2y;
+    if (myPlayer === 2 && !cheatMode) p1y = msg.p1y;
     score = msg.score;
     if (msg.scored) updateScore();
   }
 }
 
-// Cheat AI runs locally, sends paddle position to server
 function cheatTick() {
-  cheatJitterTick++;
-  if (cheatJitterTick % 7 === 0) cheatJitterOffset = (Math.random()-0.5) * 7;
-  const target = by - PH/2 + cheatJitterOffset;
+  cheatJT++;
+  if (cheatJT % 7 === 0) cheatJO = (Math.random()-0.5) * 7;
+  const target = by - PH/2 + cheatJO;
   const diff = target - cheatY;
   cheatY += Math.sign(diff) * Math.min(Math.abs(diff), 5.5);
   cheatY = Math.max(0, Math.min(H-PH, cheatY));
   if (myPlayer === 1) { p1y = cheatY; send({ type:'move', player:1, y:p1y }); }
   if (myPlayer === 2) { p2y = cheatY; send({ type:'move', player:2, y:p2y }); }
-  document.getElementById('touchSlider').value = Math.round(cheatY);
+  $('touchSlider').value = Math.round(cheatY);
 }
 
 function draw() {
@@ -189,110 +233,79 @@ function draw() {
   ctx.fillStyle = '#0a0a0f'; ctx.fillRect(0,0,W,H);
   ctx.setLineDash([6,8]); ctx.strokeStyle = 'rgba(255,255,255,0.07)'; ctx.lineWidth = 2;
   ctx.beginPath(); ctx.moveTo(W/2,0); ctx.lineTo(W/2,H); ctx.stroke(); ctx.setLineDash([]);
-  ctx.fillStyle = '#7F77DD'; ctx.beginPath(); ctx.roundRect(PAD, p1y, PW, PH, 3); ctx.fill();
-  ctx.fillStyle = '#1D9E75'; ctx.beginPath(); ctx.roundRect(W-PAD-PW, p2y, PW, PH, 3); ctx.fill();
-  ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(bx, by, BALL, 0, Math.PI*2); ctx.fill();
-  const g = ctx.createRadialGradient(bx,by,0,bx,by,BALL*2.5);
-  g.addColorStop(0,'rgba(255,255,255,0.15)'); g.addColorStop(1,'rgba(255,255,255,0)');
-  ctx.fillStyle = g; ctx.beginPath(); ctx.arc(bx,by,BALL*2.5,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#7F77DD'; ctx.beginPath(); ctx.roundRect(PAD,p1y,PW,PH,3); ctx.fill();
+  ctx.fillStyle = '#1D9E75'; ctx.beginPath(); ctx.roundRect(W-PAD-PW,p2y,PW,PH,3); ctx.fill();
+  ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(bx,by,BALL,0,Math.PI*2); ctx.fill();
 }
 
-function loop() {
-  if (cheatMode) cheatTick();
-  draw();
-  animId = requestAnimationFrame(loop);
-}
+function loop() { if (cheatMode) cheatTick(); draw(); animId = requestAnimationFrame(loop); }
 
-// Mouse (desktop)
 canvas.addEventListener('mousemove', e => {
-  if (cheatMode) return;
-  const rect = canvas.getBoundingClientRect();
-  const scaleY = H / rect.height;
-  const ny = Math.max(0, Math.min(H-PH, (e.clientY - rect.top) * scaleY - PH/2));
+  if (cheatMode || myPlayer === 0) return;
+  const r = canvas.getBoundingClientRect();
+  const ny = Math.max(0, Math.min(H-PH, (e.clientY-r.top)*(H/r.height)-PH/2));
   if (myPlayer === 1) { p1y = ny; send({ type:'move', player:1, y:ny }); }
   if (myPlayer === 2) { p2y = ny; send({ type:'move', player:2, y:ny }); }
 });
 
-// Touch on canvas (swipe)
 canvas.addEventListener('touchmove', e => {
   e.preventDefault();
-  if (cheatMode) return;
-  const rect = canvas.getBoundingClientRect();
-  const scaleY = H / rect.height;
-  const ny = Math.max(0, Math.min(H-PH, (e.touches[0].clientY - rect.top) * scaleY - PH/2));
+  if (cheatMode || myPlayer === 0) return;
+  const r = canvas.getBoundingClientRect();
+  const ny = Math.max(0, Math.min(H-PH, (e.touches[0].clientY-r.top)*(H/r.height)-PH/2));
   if (myPlayer === 1) { p1y = ny; send({ type:'move', player:1, y:ny }); }
   if (myPlayer === 2) { p2y = ny; send({ type:'move', player:2, y:ny }); }
 }, { passive: false });
 
-// Touch slider (mobile)
-document.getElementById('touchSlider').addEventListener('input', e => {
-  if (cheatMode) return;
+$('touchSlider').addEventListener('input', e => {
+  if (cheatMode || myPlayer === 0) return;
   const ny = parseInt(e.target.value);
   if (myPlayer === 1) { p1y = ny; send({ type:'move', player:1, y:ny }); }
   if (myPlayer === 2) { p2y = ny; send({ type:'move', player:2, y:ny }); }
 });
 
-// Cheat toggle
 function toggleCheat() {
+  if (myPlayer === 0) return;
   cheatMode = !cheatMode;
   cheatY = myPlayer === 1 ? p1y : p2y;
-  if (cheatMode) {
-    document.getElementById('dot').className = 'cheat';
-    document.getElementById('statusLabel').textContent = 'ki-übernahme aktiv';
-  } else {
-    document.getElementById('dot').className = 'on';
-    document.getElementById('statusLabel').textContent = 'spieler ' + myPlayer;
-  }
+  $('dot').className = cheatMode ? 'cheat' : 'on';
+  $('statusLabel').textContent = cheatMode ? 'ki-übernahme aktiv' : 'spieler ' + myPlayer;
 }
 
-// Invisible touch zones (top-left + bottom-right corners of canvas)
-let touchZoneTimer = null;
-function setupTouchZones() {
-  const tl = document.getElementById('zone-tl');
-  const br = document.getElementById('zone-br');
-  let tlActive = false, brActive = false;
+// Unsichtbare Touch-Ecken: gleichzeitig oben-links + unten-rechts antippen
+let tlDown = false, brDown = false;
+$('zone-tl').addEventListener('touchstart', e => { e.preventDefault(); tlDown = true; if (brDown) toggleCheat(); }, { passive: false });
+$('zone-tl').addEventListener('touchend', () => tlDown = false);
+$('zone-br').addEventListener('touchstart', e => { e.preventDefault(); brDown = true; if (tlDown) toggleCheat(); }, { passive: false });
+$('zone-br').addEventListener('touchend', () => brDown = false);
 
-  function checkBothTouched() {
-    if (tlActive && brActive) toggleCheat();
-  }
-
-  [tl, br].forEach((zone, i) => {
-    zone.addEventListener('touchstart', e => {
-      e.preventDefault();
-      if (i === 0) tlActive = true; else brActive = true;
-      checkBothTouched();
-    }, { passive: false });
-    zone.addEventListener('touchend', () => {
-      if (i === 0) tlActive = false; else brActive = false;
-    });
-  });
-}
-setupTouchZones();
-
-// Pause cheat when tab is hidden
+// Tab versteckt → Cheat aus
 document.addEventListener('visibilitychange', () => {
-  if (document.hidden && cheatMode) {
-    cheatMode = false;
-    document.getElementById('dot').className = 'on';
-    document.getElementById('statusLabel').textContent = 'spieler ' + myPlayer;
-  }
+  if (document.hidden && cheatMode) toggleCheat();
 });
 
 document.addEventListener('keydown', e => {
-  if ((e.key === 'c' || e.key === 'C') && myPlayer !== 0) toggleCheat();
+  if (e.key === 'c' || e.key === 'C') toggleCheat();
 });
 
-// Lobby
-document.getElementById('joinBtn').addEventListener('click', () => {
-  const room = document.getElementById('roomInput').value.trim();
+$('joinBtn').addEventListener('click', () => {
+  const room = $('roomInput').value.trim();
   if (!room) return;
-  document.getElementById('joinSection').classList.add('hidden');
-  document.getElementById('waitSection').classList.remove('hidden');
+  $('errorMsg').style.display = 'none';
+  $('retryBtn').style.display = 'none';
+  $('joinSection').classList.add('hidden');
+  $('waitSection').classList.remove('hidden');
   connectToRoom(room);
 });
-document.getElementById('roomInput').addEventListener('keydown', e => {
-  if (e.key === 'Enter') document.getElementById('joinBtn').click();
+
+$('retryBtn').addEventListener('click', () => {
+  $('errorMsg').style.display = 'none';
+  $('retryBtn').style.display = 'none';
+  $('joinSection').querySelector('p').style.display = '';
+  $('joinSection').classList.remove('hidden');
 });
+
+$('roomInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('joinBtn').click(); });
 
 draw();
 </script>
