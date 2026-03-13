@@ -205,12 +205,7 @@ function handleMsg(msg) {
   }
   if (msg.type === 'tick') {
     bx = msg.bx; by = msg.by;
-    if (!cheatMode || myPlayer === 0) {
-      if (myPlayer !== 1) p1y = msg.p1y;
-      if (myPlayer !== 2) p2y = msg.p2y;
-    }
-    if (myPlayer === 1 && !cheatMode) p2y = msg.p2y;
-    if (myPlayer === 2 && !cheatMode) p1y = msg.p1y;
+    p1y = msg.p1y; p2y = msg.p2y;
     score = msg.score;
     if (msg.scored) updateScore();
   }
