@@ -13,42 +13,87 @@ body {
   font-family: monospace; color: #fff; user-select: none;
   position: relative; overflow: hidden;
 }
-#lobby {
-  position: fixed; inset: 0; z-index: 100;
-  background: #0a0a0f;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center; gap: 18px; padding: 24px;
+
+/* ── MENU ── */
+#menu {
+  position: fixed; inset: 0; z-index: 100; background: #0a0a0f;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0; padding: 24px;
 }
-#lobby h1 { font-size: 24px; font-weight: 500; letter-spacing: 3px; }
-#lobby p { font-size: 13px; color: rgba(255,255,255,0.45); text-align: center; max-width: 300px; line-height: 1.8; }
+#menu h1 { font-size: 28px; letter-spacing: 6px; font-weight: 500; margin-bottom: 32px; }
+.mode-btns { display: flex; flex-direction: column; gap: 10px; width: 240px; }
+.mode-btn {
+  padding: 13px 0; background: transparent; border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 8px; color: #fff; font-family: monospace; font-size: 14px; cursor: pointer;
+  letter-spacing: 1px; transition: background 0.15s, border-color 0.15s;
+}
+.mode-btn:hover, .mode-btn:active { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.35); }
+.mode-btn.primary { border-color: rgba(127,119,221,0.5); color: #afa9ec; }
+.mode-btn.primary:hover { background: rgba(127,119,221,0.1); }
+
+/* ── MUTATOR PANEL ── */
+#mutPanel {
+  position: fixed; inset: 0; z-index: 100; background: #0a0a0f;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; padding: 28px;
+}
+#mutPanel h2 { font-size: 16px; letter-spacing: 3px; font-weight: 500; color: rgba(255,255,255,0.6); margin-bottom: 4px; }
+.mut-row { display: flex; flex-direction: column; gap: 6px; width: 280px; }
+.mut-label { font-size: 12px; color: rgba(255,255,255,0.4); letter-spacing: 1px; display: flex; justify-content: space-between; }
+.mut-label span { color: #fff; font-size: 13px; }
+input[type=range] {
+  width: 100%; height: 4px; -webkit-appearance: none; appearance: none;
+  background: rgba(255,255,255,0.12); border-radius: 2px; outline: none;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 18px; height: 18px;
+  border-radius: 50%; background: #7F77DD; border: none; cursor: pointer;
+}
+.mut-divider { width: 280px; height: 1px; background: rgba(255,255,255,0.07); margin: 4px 0; }
+.mut-btns { display: flex; gap: 10px; width: 280px; }
+.mut-btns button {
+  flex: 1; padding: 12px 0; background: transparent; border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 8px; color: #fff; font-family: monospace; font-size: 13px; cursor: pointer;
+}
+.mut-btns button.go { border-color: rgba(29,158,117,0.5); color: #5DCAA5; }
+.mut-btns button:hover { background: rgba(255,255,255,0.05); }
+
+/* ── LOBBY (multiplayer) ── */
+#lobby {
+  position: fixed; inset: 0; z-index: 100; background: #0a0a0f;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding: 24px;
+}
+#lobby h2 { font-size: 16px; letter-spacing: 3px; font-weight: 500; color: rgba(255,255,255,0.5); }
 #lobby input {
   background: transparent; border: 1px solid rgba(255,255,255,0.2); border-radius: 8px;
   padding: 12px 16px; color: #fff; font-family: monospace; font-size: 16px;
   width: 260px; outline: none; text-align: center;
 }
-#lobby input:focus { border-color: rgba(255,255,255,0.5); }
-#joinBtn {
-  padding: 12px 40px; background: transparent; border: 1px solid rgba(255,255,255,0.25);
-  border-radius: 8px; color: #fff; font-family: monospace; font-size: 15px; cursor: pointer;
+#lobby input:focus { border-color: rgba(255,255,255,0.45); }
+#lobbyJoinBtn {
+  padding: 12px 40px; background: transparent; border: 1px solid rgba(255,255,255,0.22);
+  border-radius: 8px; color: #fff; font-family: monospace; font-size: 14px; cursor: pointer;
 }
-#joinBtn:active { background: rgba(255,255,255,0.08); }
-#waitMsg { font-size: 13px; color: rgba(255,255,255,0.4); text-align: center; line-height: 2; }
-#errorMsg { font-size: 12px; color: #E24B4A; text-align: center; max-width: 280px; line-height: 1.6; display: none; }
-#retryBtn {
-  padding: 10px 28px; background: transparent; border: 1px solid rgba(226,75,74,0.4);
-  border-radius: 8px; color: #E24B4A; font-family: monospace; font-size: 13px; cursor: pointer; display: none;
+#lobbyJoinBtn:active { background: rgba(255,255,255,0.06); }
+#lobbyBack {
+  padding: 8px 0; background: transparent; border: none;
+  color: rgba(255,255,255,0.3); font-family: monospace; font-size: 12px; cursor: pointer;
 }
+#lobbyBack:hover { color: rgba(255,255,255,0.6); }
+#waitMsg { font-size: 13px; color: rgba(255,255,255,0.35); text-align: center; line-height: 2; }
+#lobbyError { font-size: 12px; color: #E24B4A; text-align: center; max-width: 260px; line-height: 1.6; display: none; }
 
+/* ── GAME ── */
 #scoreboard {
   display: flex; gap: 48px; font-size: 32px; font-weight: 500;
-  margin-bottom: 8px; letter-spacing: 3px;
+  margin-bottom: 8px; letter-spacing: 3px; min-height: 44px;
 }
-#canvas { border: 1px solid rgba(255,255,255,0.12); border-radius: 4px; display: block; touch-action: none; }
-#statusbar { margin-top: 8px; font-size: 12px; color: rgba(255,255,255,0.3); display: flex; gap: 10px; align-items: center; }
-#dot { width: 7px; height: 7px; border-radius: 50%; background: rgba(255,255,255,0.15); flex-shrink: 0; transition: background 0.3s; }
+#canvas { border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; display: block; touch-action: none; }
+#statusbar {
+  margin-top: 8px; font-size: 11px; color: rgba(255,255,255,0.2);
+  display: flex; gap: 10px; align-items: center; min-height: 20px;
+}
+#dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.1); flex-shrink: 0; transition: background 0.3s; }
 #dot.on { background: #1D9E75; }
 #dot.cheat { background: #7F77DD; }
-
 #mobileControls { display: none; width: 100%; flex-direction: column; align-items: center; padding: 10px 16px 0; }
 #touchSlider {
   width: 100%; height: 48px; -webkit-appearance: none; appearance: none;
@@ -56,173 +101,432 @@ body {
 }
 #touchSlider::-webkit-slider-thumb {
   -webkit-appearance: none; width: 52px; height: 52px;
-  border-radius: 50%; background: #7F77DD; border: 2px solid rgba(255,255,255,0.25);
+  border-radius: 50%; background: #7F77DD; border: 2px solid rgba(255,255,255,0.2);
 }
 #touchSlider.p2::-webkit-slider-thumb { background: #1D9E75; }
+#menuBtn {
+  margin-top: 10px; padding: 6px 18px; background: transparent;
+  border: 1px solid rgba(255,255,255,0.1); border-radius: 6px;
+  color: rgba(255,255,255,0.25); font-family: monospace; font-size: 11px; cursor: pointer;
+}
+#menuBtn:hover { color: rgba(255,255,255,0.5); border-color: rgba(255,255,255,0.25); }
+#winBanner {
+  position: fixed; inset: 0; z-index: 50; background: rgba(10,10,15,0.88);
+  display: none; flex-direction: column; align-items: center; justify-content: center; gap: 18px;
+}
+#winBanner h2 { font-size: 22px; font-weight: 500; letter-spacing: 2px; }
+#winBanner button {
+  padding: 11px 36px; background: transparent; border: 1px solid rgba(255,255,255,0.22);
+  border-radius: 8px; color: #fff; font-family: monospace; font-size: 14px; cursor: pointer;
+}
 .hidden { display: none !important; }
 </style>
 </head>
 <body>
 
-<div id="lobby">
+<!-- MAIN MENU -->
+<div id="menu">
   <h1>PONG</h1>
-  <div id="joinSection" style="display:flex;flex-direction:column;align-items:center;gap:14px">
-    <p>Raum-Namen eingeben — teile ihn mit deinem Freund.</p>
-    <input id="roomInput" placeholder="z.B. arena1" maxlength="32" autocomplete="off" spellcheck="false"/>
-    <button id="joinBtn">Beitreten</button>
-    <div id="errorMsg"></div>
-    <button id="retryBtn">Nochmal versuchen</button>
-  </div>
-  <div id="waitSection" class="hidden" style="display:flex;flex-direction:column;align-items:center;gap:14px">
-    <div id="waitMsg">Verbinde mit Server…</div>
+  <div class="mode-btns">
+    <button class="mode-btn primary" onclick="goMode('sp')">Singleplayer</button>
+    <button class="mode-btn" onclick="goMode('mp')">Multiplayer</button>
   </div>
 </div>
 
+<!-- MUTATOR PANEL -->
+<div id="mutPanel" class="hidden">
+  <h2>EINSTELLUNGEN</h2>
+  <div class="mut-row">
+    <div class="mut-label">Ballgeschwindigkeit <span id="bsVal">normal</span></div>
+    <input type="range" id="bsSlider" min="1" max="5" value="3" step="1"/>
+  </div>
+  <div class="mut-row">
+    <div class="mut-label">Abprall-Effekt <span id="bnVal">normal</span></div>
+    <input type="range" id="bnSlider" min="1" max="5" value="3" step="1"/>
+  </div>
+  <div class="mut-row">
+    <div class="mut-label">KI-Schwierigkeit <span id="aiVal">mittel</span></div>
+    <input type="range" id="aiSlider" min="1" max="5" value="3" step="1"/>
+  </div>
+  <div class="mut-divider"></div>
+  <div class="mut-row">
+    <div class="mut-label">Max. Punkte <span id="mpVal">∞</span></div>
+    <input type="range" id="mpSlider" min="0" max="10" value="0" step="1"/>
+  </div>
+  <div class="mut-row">
+    <div class="mut-label">Schläger-Größe <span id="psVal">normal</span></div>
+    <input type="range" id="psSlider" min="1" max="5" value="3" step="1"/>
+  </div>
+  <div class="mut-divider"></div>
+  <div class="mut-btns">
+    <button onclick="backToMenu()">← zurück</button>
+    <button class="go" id="mutGoBtn">Los →</button>
+  </div>
+</div>
+
+<!-- LOBBY -->
+<div id="lobby" class="hidden">
+  <h2>MULTIPLAYER</h2>
+  <div id="lobbyJoin" style="display:flex;flex-direction:column;align-items:center;gap:12px">
+    <input id="roomInput" placeholder="Raum-Name" maxlength="32" autocomplete="off" spellcheck="false"/>
+    <button id="lobbyJoinBtn">Beitreten</button>
+    <div id="lobbyError"></div>
+    <button id="lobbyBack">← zurück</button>
+  </div>
+  <div id="lobbyWait" class="hidden" style="display:flex;flex-direction:column;align-items:center;gap:12px">
+    <div id="waitMsg">Verbinde…</div>
+    <button id="lobbyBack2" style="padding:8px 0;background:transparent;border:none;color:rgba(255,255,255,0.3);font-family:monospace;font-size:12px;cursor:pointer;" onclick="backToMenu()">← abbrechen</button>
+  </div>
+</div>
+
+<!-- GAME -->
 <div id="scoreboard">
   <span id="s1">0</span>
-  <span style="color:rgba(255,255,255,0.15)">:</span>
+  <span style="color:rgba(255,255,255,0.12)">:</span>
   <span id="s2">0</span>
 </div>
-
 <div style="position:relative;display:inline-block;line-height:0;">
   <canvas id="canvas" width="560" height="360"></canvas>
   <div id="zone-tl" style="position:absolute;top:0;left:0;width:70px;height:70px;z-index:5;"></div>
+  <div id="zone-tr" style="position:absolute;top:0;right:0;width:70px;height:70px;z-index:5;"></div>
   <div id="zone-br" style="position:absolute;bottom:0;right:0;width:70px;height:70px;z-index:5;"></div>
 </div>
-
 <div id="mobileControls">
   <input type="range" id="touchSlider" min="0" max="290" value="145"/>
 </div>
+<div id="statusbar"><div id="dot"></div><span id="statusLabel"></span></div>
+<button id="menuBtn" onclick="backToMenu()">← menü</button>
 
-<div id="statusbar">
-  <div id="dot"></div>
-  <span id="statusLabel">nicht verbunden</span>
+<!-- WIN BANNER -->
+<div id="winBanner">
+  <h2 id="winText"></h2>
+  <button onclick="restartGame()">Nochmal</button>
+  <button onclick="backToMenu()">Menü</button>
 </div>
 
 <script>
 const SERVER_URL = "wss://pong-1-u1eg.onrender.com";
-const W = 560, H = 360, PAD = 12, PW = 10, PH = 70, BALL = 9;
-
+const W = 560, H = 360, PAD = 12, PW = 10;
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent) || window.innerWidth < 640;
 
+// ── STATE ──
+let gameMode = null; // 'sp' | 'mp'
+let ws = null, myPlayer = 0, animId = null;
+let p1y, p2y, bx, by, vx, vy;
+let score = [0, 0];
+let cheatMode = false, cheatY = 0, cheatJT = 0, cheatJO = 0;
+let statusVisible = true;
+
+// Mutators
+let MUT = { ballSpeed: 3, bounce: 3, aiDiff: 3, maxPts: 0, padSize: 3 };
+let PH = 70;
+const BALL = 9;
+const SPEEDS = [2.5, 3.5, 4.5, 6, 8];
+const BOUNCE_ACCEL = [0, 0.1, 0.3, 0.6, 1.0]; // extra speed per bounce
+const BOUNCE_ANGLE = [30, 45, 60, 72, 80];     // max angle degrees
+const AI_SPEEDS = [1.5, 2.5, 3.8, 5.2, 7];
+const PAD_SIZES = [35, 52, 70, 95, 130];
+const BS_LABELS = ['sehr langsam','langsam','normal','schnell','sehr schnell'];
+const AI_LABELS = ['sehr leicht','leicht','mittel','schwer','unmöglich'];
+const PS_LABELS = ['winzig','klein','normal','groß','riesig'];
+
+const $ = id => document.getElementById(id);
+
+// ── RESIZE ──
 function resize() {
   const maxW = Math.min(window.innerWidth - 16, W);
-  const maxH = isMobile ? window.innerHeight * 0.48 : window.innerHeight - 140;
+  const maxH = isMobile ? window.innerHeight * 0.46 : window.innerHeight - 150;
   const s = Math.min(maxW / W, maxH / H);
   canvas.style.width = Math.floor(W * s) + 'px';
   canvas.style.height = Math.floor(H * s) + 'px';
   if (isMobile) {
-    const mc = document.getElementById('mobileControls');
-    mc.style.display = 'flex';
-    mc.style.maxWidth = Math.floor(W * s) + 'px';
-    document.getElementById('scoreboard').style.cssText =
-      'display:flex;gap:28px;font-size:22px;font-weight:500;margin-bottom:6px;letter-spacing:3px;';
+    $('mobileControls').style.display = 'flex';
+    $('mobileControls').style.maxWidth = Math.floor(W * s) + 'px';
+    $('scoreboard').style.cssText = 'display:flex;gap:28px;font-size:22px;font-weight:500;margin-bottom:6px;letter-spacing:3px;min-height:36px;';
+    $('touchSlider').style.maxWidth = Math.floor(W * s) + 'px';
   }
 }
 resize();
 window.addEventListener('resize', resize);
 
-let ws = null, myPlayer = 0, animId = null;
-let p1y = H/2-PH/2, p2y = H/2-PH/2, bx = W/2, by = H/2;
-let score = [0, 0];
-let cheatMode = false, cheatY = H/2-PH/2, cheatJT = 0, cheatJO = 0;
-
-const $ = id => document.getElementById(id);
-
-function setStatus(label, cls) {
-  $('statusLabel').textContent = label;
-  $('dot').className = cls || '';
-}
-function updateScore() {
-  $('s1').textContent = score[0];
-  $('s2').textContent = score[1];
-}
-function hideLobby() { $('lobby').classList.add('hidden'); }
-function send(obj) { if (ws && ws.readyState === 1) ws.send(JSON.stringify(obj)); }
-
-function showError(msg) {
-  $('errorMsg').textContent = msg;
-  $('errorMsg').style.display = 'block';
-  $('retryBtn').style.display = 'block';
-  $('waitSection').classList.add('hidden');
-  $('joinSection').classList.remove('hidden');
-  $('joinSection').querySelector('p').style.display = 'none';
+// ── MENU LOGIC ──
+function showOnly(id) {
+  ['menu','mutPanel','lobby'].forEach(el => $(el).classList.add('hidden'));
+  if (id) $(id).classList.remove('hidden');
 }
 
+function goMode(mode) {
+  gameMode = mode;
+  showOnly('mutPanel');
+  // Hide AI slider for multiplayer
+  $('aiSlider').closest('.mut-row').style.display = mode === 'mp' ? 'none' : 'flex';
+  $('mutGoBtn').textContent = mode === 'mp' ? 'Weiter →' : 'Los →';
+  updateMutLabels();
+}
+
+function backToMenu() {
+  stopGame();
+  if (ws) { ws.close(); ws = null; }
+  showOnly('menu');
+  $('winBanner').style.display = 'none';
+  myPlayer = 0; gameMode = null;
+  $('lobbyJoin').style.display = 'flex';
+  $('lobbyWait').classList.add('hidden');
+  $('lobbyError').style.display = 'none';
+}
+
+// ── MUTATOR LABELS ──
+const BN_LABELS = ['flach','wenig','normal','stark','extrem'];
+function updateMutLabels() {
+  const bs = parseInt($('bsSlider').value);
+  const bn = parseInt($('bnSlider').value);
+  const ai = parseInt($('aiSlider').value);
+  const mp = parseInt($('mpSlider').value);
+  const ps = parseInt($('psSlider').value);
+  $('bsVal').textContent = BS_LABELS[bs-1];
+  $('bnVal').textContent = BN_LABELS[bn-1];
+  $('aiVal').textContent = AI_LABELS[ai-1];
+  $('mpVal').textContent = mp === 0 ? '∞' : mp;
+  $('psVal').textContent = PS_LABELS[ps-1];
+}
+['bsSlider','bnSlider','aiSlider','mpSlider','psSlider'].forEach(id => {
+  $(id) && $(id).addEventListener('input', updateMutLabels);
+});
+
+function readMutators() {
+  MUT.ballSpeed = parseInt($('bsSlider').value);
+  MUT.bounce    = parseInt($('bnSlider').value);
+  MUT.aiDiff    = parseInt($('aiSlider').value);
+  MUT.maxPts    = parseInt($('mpSlider').value);
+  MUT.padSize   = parseInt($('psSlider').value);
+  PH = PAD_SIZES[MUT.padSize - 1];
+}
+
+$('mutGoBtn').addEventListener('click', () => {
+  readMutators();
+  if (gameMode === 'sp') { showOnly(null); initGame('sp'); }
+  else { showOnly('lobby'); }
+});
+
+function initGame(mode) {
+  score = [0, 0]; updateScore();
+  p1y = H/2 - PH/2; p2y = H/2 - PH/2;
+  cheatMode = false; cheatY = p1y;
+  $('dot').className = '';
+  $('statusLabel').textContent = '';
+  $('winBanner').style.display = 'none';
+  resetBallLocal(1);
+  if (animId) cancelAnimationFrame(animId);
+  animId = requestAnimationFrame(loop);
+}
+
+function resetBallLocal(dir) {
+  bx = W/2; by = H/2;
+  const spd = SPEEDS[MUT.ballSpeed - 1];
+  const angle = (Math.random() * 40 - 20) * Math.PI / 180;
+  vx = dir * spd * Math.cos(angle);
+  vy = spd * Math.sin(angle);
+  if (Math.random() > 0.5) vy *= -1;
+}
+
+function stopGame() {
+  if (animId) { cancelAnimationFrame(animId); animId = null; }
+}
+
+// ── SP LOOP ──
+function updateSP() {
+  bx += vx; by += vy;
+  if (by - BALL < 0) { by = BALL; vy = Math.abs(vy); }
+  if (by + BALL > H) { by = H - BALL; vy = -Math.abs(vy); }
+
+  // Player paddle (left)
+  if (bx - BALL < PAD + PW && bx > PAD && by > p1y && by < p1y + PH) {
+    bx = PAD + PW + BALL;
+    const rel = (by - (p1y + PH/2)) / (PH/2);
+    const maxAngle = BOUNCE_ANGLE[MUT.bounce - 1] * Math.PI / 180;
+    const curSpd = Math.sqrt(vx*vx+vy*vy);
+    const spd = Math.min(curSpd + BOUNCE_ACCEL[MUT.bounce - 1], SPEEDS[MUT.ballSpeed-1] * 2.5);
+    vx = spd * Math.cos(rel * maxAngle);
+    vy = spd * Math.sin(rel * maxAngle);
+  }
+
+  // AI paddle (right)
+  const aiSpd = AI_SPEEDS[MUT.aiDiff - 1];
+  const aiCenter = p2y + PH/2;
+  const diff = by - aiCenter;
+  p2y += Math.sign(diff) * Math.min(Math.abs(diff), aiSpd);
+  p2y = Math.max(0, Math.min(H - PH, p2y));
+
+  if (bx + BALL > W - PAD - PW && bx < W - PAD && by > p2y && by < p2y + PH) {
+    bx = W - PAD - PW - BALL;
+    const rel = (by - (p2y + PH/2)) / (PH/2);
+    const maxAngle = BOUNCE_ANGLE[MUT.bounce - 1] * Math.PI / 180;
+    const curSpd = Math.sqrt(vx*vx+vy*vy);
+    const spd = Math.min(curSpd + BOUNCE_ACCEL[MUT.bounce - 1], SPEEDS[MUT.ballSpeed-1] * 2.5);
+    vx = -(spd * Math.cos(rel * maxAngle));
+    vy = spd * Math.sin(rel * maxAngle);
+  }
+
+  if (bx - BALL < 0) { score[1]++; updateScore(); checkWin(); resetBallLocal(1); }
+  if (bx + BALL > W) { score[0]++; updateScore(); checkWin(); resetBallLocal(-1); }
+}
+
+// ── MULTIPLAYER ──
 function connectToRoom(room) {
   $('waitMsg').textContent = 'Verbinde mit Server…';
-  setStatus('verbinde…', '');
-
   const timeout = setTimeout(() => {
     ws && ws.close();
-    showError('Server antwortet nicht. Er schläft möglicherweise — warte 30 Sekunden und versuche es nochmal.');
+    showLobbyError('Server antwortet nicht. Warte 30 Sek. und versuche es nochmal.');
   }, 12000);
 
-  try { ws = new WebSocket(SERVER_URL); } catch(e) { clearTimeout(timeout); showError('Verbindung fehlgeschlagen.'); return; }
+  try { ws = new WebSocket(SERVER_URL); } catch(e) {
+    clearTimeout(timeout); showLobbyError('Verbindung fehlgeschlagen.'); return;
+  }
 
-  ws.onopen = () => {
+  ws.onopen = () => { clearTimeout(timeout); send({ type: 'join', room, mut: MUT }); };
+  ws.onmessage = e => handleMPMsg(JSON.parse(e.data));
+  ws.onerror = () => clearTimeout(timeout);
+  ws.onclose = ev => {
     clearTimeout(timeout);
-    setStatus('verbunden', 'on');
-    send({ type: 'join', room });
-  };
-  ws.onmessage = e => handleMsg(JSON.parse(e.data));
-  ws.onerror = () => { clearTimeout(timeout); };
-  ws.onclose = (ev) => {
-    clearTimeout(timeout);
-    if (myPlayer === 0) {
-      showError('Verbindung getrennt (Code ' + ev.code + '). Server möglicherweise nicht erreichbar.');
-    } else {
-      setStatus('getrennt — seite neu laden', '');
-    }
+    if (myPlayer === 0) showLobbyError('Verbindung getrennt (Code ' + ev.code + ').');
+    else { $('statusLabel').textContent = 'getrennt — seite neu laden'; $('dot').className = ''; }
   };
 }
 
-function handleMsg(msg) {
+function showLobbyError(msg) {
+  $('lobbyError').textContent = msg;
+  $('lobbyError').style.display = 'block';
+  $('lobbyWait').classList.add('hidden');
+  $('lobbyJoin').style.display = 'flex';
+}
+
+function handleMPMsg(msg) {
   if (msg.type === 'assigned') {
     myPlayer = msg.player;
+    PH = 70;
     if (msg.state) { p1y = msg.state.p1y; p2y = msg.state.p2y; score = msg.state.score; updateScore(); }
     if (myPlayer === 1) {
       $('waitMsg').innerHTML = 'Du bist Spieler 1 (lila)<br>Warte auf Spieler 2…';
-      setStatus('spieler 1 — warte', 'on');
+      setStatus('spieler 1', 'on');
     } else if (myPlayer === 2) {
-      hideLobby();
+      showOnly(null);
       setStatus('spieler 2', 'on');
       $('touchSlider').classList.add('p2');
       if (!animId) animId = requestAnimationFrame(loop);
     } else {
-      $('waitMsg').textContent = 'Raum voll — nur zuschauen';
+      $('waitMsg').textContent = 'Raum voll';
     }
   }
   if (msg.type === 'playerCount') {
-    if (msg.count >= 2 && myPlayer === 1) { hideLobby(); setStatus('spieler 1', 'on'); }
+    if (msg.count >= 2 && myPlayer === 1) { showOnly(null); setStatus('spieler 1', 'on'); }
     if (msg.count < 2 && myPlayer !== 0) setStatus('gegner getrennt', 'on');
   }
   if (msg.type === 'start') {
-    score = [0,0]; updateScore();
+    if (msg.mut) { Object.assign(MUT, msg.mut); PH = PAD_SIZES[MUT.padSize - 1]; }
+    score = [0,0]; updateScore(); $('winBanner').style.display = 'none';
     if (!animId) animId = requestAnimationFrame(loop);
   }
   if (msg.type === 'tick') {
     bx = msg.bx; by = msg.by;
     p1y = msg.p1y; p2y = msg.p2y;
     score = msg.score;
-    if (msg.scored) updateScore();
+    if (msg.scored) { updateScore(); checkWin(); }
   }
 }
 
+// ── WIN CHECK ──
+function checkWin() {
+  if (MUT.maxPts === 0) return;
+  if (score[0] >= MUT.maxPts || score[1] >= MUT.maxPts) {
+    const winner = score[0] >= MUT.maxPts ? 'Spieler 1' : 'Spieler 2 / KI';
+    $('winText').textContent = winner + ' gewinnt!';
+    $('winBanner').style.display = 'flex';
+    stopGame();
+  }
+}
+
+function restartGame() {
+  $('winBanner').style.display = 'none';
+  if (gameMode === 'sp') initGame('sp');
+  else if (gameMode === 'mp' && myPlayer === 1) send({ type: 'start' });
+}
+
+// ── CHEAT ──
+// Level 0 = aus, 1 = normal (jitter, leicht), 2 = advanced (schneller, weniger jitter), 3 = perfect (exakt)
+let cheatLevel = 0;
+const CHEAT_SPEEDS = [0, 5.5, 8, 999];
+const CHEAT_JITTER = [0, 7, 3, 0];
+
+// Für perfect AI: zufälliger Ziel-Offset der sich langsam ändert
+let perfectOffset = 0, perfectOffsetTarget = 0, perfectOffsetTick = 0;
+
 function cheatTick() {
+  if (cheatLevel === 0) return;
   cheatJT++;
-  if (cheatJT % 7 === 0) cheatJO = (Math.random()-0.5) * 7;
-  const target = by - PH/2 + cheatJO;
+  const jMax = CHEAT_JITTER[cheatLevel];
+
+  let target;
+  if (cheatLevel === 3) {
+    perfectOffsetTick++;
+    if (perfectOffsetTick > 90) {
+      perfectOffsetTarget = (Math.random() - 0.5) * PH * 0.7;
+      perfectOffsetTick = 0;
+    }
+    perfectOffset += (perfectOffsetTarget - perfectOffset) * 0.02;
+    target = by - PH/2 + perfectOffset;
+  } else {
+    // Langsam driftender Hit-Point-Offset (alle Stufen)
+    perfectOffsetTick++;
+    if (perfectOffsetTick > 60) {
+      const spread = cheatLevel === 1 ? PH * 0.5 : PH * 0.35;
+      perfectOffsetTarget = (Math.random() - 0.5) * spread;
+      perfectOffsetTick = 0;
+    }
+    perfectOffset += (perfectOffsetTarget - perfectOffset) * 0.015;
+    // Zusätzlicher schneller Jitter obendrauf
+    if (cheatJT % 7 === 0) cheatJO = (Math.random()-0.5) * jMax;
+    target = by - PH/2 + perfectOffset + cheatJO;
+  }
+
   const diff = target - cheatY;
-  cheatY += Math.sign(diff) * Math.min(Math.abs(diff), 5.5);
+  const spd = CHEAT_SPEEDS[cheatLevel];
+  cheatY += Math.sign(diff) * Math.min(Math.abs(diff), spd);
   cheatY = Math.max(0, Math.min(H-PH, cheatY));
-  if (myPlayer === 1) { p1y = cheatY; send({ type:'move', player:1, y:p1y }); }
-  if (myPlayer === 2) { p2y = cheatY; send({ type:'move', player:2, y:p2y }); }
+  if (gameMode === 'sp') {
+    p1y = cheatY;
+  } else {
+    if (myPlayer === 1) { p1y = cheatY; send({ type:'move', player:1, y:p1y }); }
+    if (myPlayer === 2) { p2y = cheatY; send({ type:'move', player:2, y:p2y }); }
+  }
   $('touchSlider').value = Math.round(cheatY);
 }
 
+// cheatMode ist jetzt true wenn level > 0
+function setCheatLevel(level) {
+  cheatLevel = level;
+  cheatMode = level > 0;
+  cheatY = (gameMode === 'mp' && myPlayer === 2) ? p2y : p1y;
+  const labels = ['', 'ki-übernahme aktiv', 'ki+ aktiv', 'ki++ aktiv'];
+  const dots = ['', 'cheat', 'cheat', 'cheat'];
+  if (cheatMode) {
+    $('dot').className = dots[level];
+    if (statusVisible) $('statusLabel').textContent = labels[level];
+  } else {
+    $('dot').className = gameMode === 'mp' ? 'on' : '';
+    $('statusLabel').textContent = gameMode === 'mp' ? 'spieler ' + myPlayer : '';
+  }
+}
+
+function toggleCheat() { setCheatLevel(cheatLevel > 0 ? 0 : 1); }
+
+function toggleStatusVisible() {
+  statusVisible = !statusVisible;
+  $('statusbar').style.opacity = statusVisible ? '1' : '0';
+}
+
+// ── DRAW ──
 function draw() {
   ctx.clearRect(0,0,W,H);
   ctx.fillStyle = '#0a0a0f'; ctx.fillRect(0,0,W,H);
@@ -233,74 +537,103 @@ function draw() {
   ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(bx,by,BALL,0,Math.PI*2); ctx.fill();
 }
 
-function loop() { if (cheatMode) cheatTick(); draw(); animId = requestAnimationFrame(loop); }
-
-canvas.addEventListener('mousemove', e => {
-  if (cheatMode || myPlayer === 0) return;
-  const r = canvas.getBoundingClientRect();
-  const ny = Math.max(0, Math.min(H-PH, (e.clientY-r.top)*(H/r.height)-PH/2));
-  if (myPlayer === 1) { p1y = ny; send({ type:'move', player:1, y:ny }); }
-  if (myPlayer === 2) { p2y = ny; send({ type:'move', player:2, y:ny }); }
-});
-
-canvas.addEventListener('touchmove', e => {
-  e.preventDefault();
-  if (cheatMode || myPlayer === 0) return;
-  const r = canvas.getBoundingClientRect();
-  const ny = Math.max(0, Math.min(H-PH, (e.touches[0].clientY-r.top)*(H/r.height)-PH/2));
-  if (myPlayer === 1) { p1y = ny; send({ type:'move', player:1, y:ny }); }
-  if (myPlayer === 2) { p2y = ny; send({ type:'move', player:2, y:ny }); }
-}, { passive: false });
-
-$('touchSlider').addEventListener('input', e => {
-  if (cheatMode || myPlayer === 0) return;
-  const ny = parseInt(e.target.value);
-  if (myPlayer === 1) { p1y = ny; send({ type:'move', player:1, y:ny }); }
-  if (myPlayer === 2) { p2y = ny; send({ type:'move', player:2, y:ny }); }
-});
-
-function toggleCheat() {
-  if (myPlayer === 0) return;
-  cheatMode = !cheatMode;
-  cheatY = myPlayer === 1 ? p1y : p2y;
-  $('dot').className = cheatMode ? 'cheat' : 'on';
-  $('statusLabel').textContent = cheatMode ? 'ki-übernahme aktiv' : 'spieler ' + myPlayer;
+function loop() {
+  if (cheatMode) cheatTick();
+  if (gameMode === 'sp') updateSP();
+  draw();
+  animId = requestAnimationFrame(loop);
 }
 
-// Unsichtbare Touch-Ecken: gleichzeitig oben-links + unten-rechts antippen
-let tlDown = false, brDown = false;
-$('zone-tl').addEventListener('touchstart', e => { e.preventDefault(); tlDown = true; if (brDown) toggleCheat(); }, { passive: false });
-$('zone-tl').addEventListener('touchend', () => tlDown = false);
-$('zone-br').addEventListener('touchstart', e => { e.preventDefault(); brDown = true; if (tlDown) toggleCheat(); }, { passive: false });
-$('zone-br').addEventListener('touchend', () => brDown = false);
+// ── INPUT ──
+function setStatus(label, cls) {
+  $('statusLabel').textContent = label; $('dot').className = cls || '';
+}
+function updateScore() {
+  $('s1').textContent = score[0]; $('s2').textContent = score[1];
+}
+function send(obj) { if (ws && ws.readyState === 1) ws.send(JSON.stringify(obj)); }
 
-// Tab versteckt → Cheat aus
-document.addEventListener('visibilitychange', () => {
-  if (document.hidden && cheatMode) toggleCheat();
+function movePlayer(ny) {
+  if (cheatMode) return;
+  if (gameMode === 'sp') { p1y = ny; return; }
+  if (myPlayer === 1) { p1y = ny; send({ type:'move', player:1, y:ny }); }
+  if (myPlayer === 2) { p2y = ny; send({ type:'move', player:2, y:ny }); }
+}
+
+canvas.addEventListener('mousemove', e => {
+  if (!animId) return;
+  const r = canvas.getBoundingClientRect();
+  movePlayer(Math.max(0, Math.min(H-PH, (e.clientY-r.top)*(H/r.height)-PH/2)));
 });
+canvas.addEventListener('touchmove', e => {
+  e.preventDefault();
+  if (!animId) return;
+  const r = canvas.getBoundingClientRect();
+  movePlayer(Math.max(0, Math.min(H-PH, (e.touches[0].clientY-r.top)*(H/r.height)-PH/2)));
+}, { passive: false });
+$('touchSlider').addEventListener('input', e => {
+  if (!animId) return;
+  movePlayer(parseInt(e.target.value));
+});
+
+// Touch zones:
+// TL gedrückt halten + BR antippen = cheat level hoch (oder aus wenn schon level 3)
+// TL doppeltippen = status ein/aus
+let tlDown = false, trDown = false, brDown = false;
+let tlTapCount = 0, tlTapTimer = null;
+
+$('zone-tl').addEventListener('touchstart', e => {
+  e.preventDefault();
+  tlDown = true;
+  // Doppeltipp-Erkennung für Status toggle
+  tlTapCount++;
+  clearTimeout(tlTapTimer);
+  tlTapTimer = setTimeout(() => {
+    if (tlTapCount >= 2 && !trDown && !brDown) toggleStatusVisible();
+    tlTapCount = 0;
+  }, 350);
+}, { passive: false });
+$('zone-tl').addEventListener('touchend', () => { tlDown = false; });
+
+// TL + TR = KI an/aus (einfacher toggle)
+$('zone-tr').addEventListener('touchstart', e => {
+  e.preventDefault();
+  trDown = true;
+  if (tlDown) toggleCheat();
+}, { passive: false });
+$('zone-tr').addEventListener('touchend', () => { trDown = false; });
+
+// TL gehalten + BR mehrfach antippen = Stufe hochschalten
+$('zone-br').addEventListener('touchstart', e => {
+  e.preventDefault();
+  brDown = true;
+  if (tlDown) {
+    const next = cheatLevel >= 3 ? 3 : cheatLevel + 1;
+    setCheatLevel(next);
+  }
+}, { passive: false });
+$('zone-br').addEventListener('touchend', () => { brDown = false; });
+
+document.addEventListener('visibilitychange', () => { if (document.hidden && cheatMode) setCheatLevel(0); });
 
 document.addEventListener('keydown', e => {
-  if (e.key === 'c' || e.key === 'C') toggleCheat();
+  if (e.key === 'c' || e.key === 'C') setCheatLevel(cheatLevel === 0 ? 1 : 0); // normal an/aus
+  if (e.key === 'x' || e.key === 'X') setCheatLevel(cheatLevel === 2 ? 0 : 2); // advanced an/aus
+  if (e.key === 'y' || e.key === 'Y') setCheatLevel(cheatLevel === 3 ? 0 : 3); // perfect an/aus
+  if (e.key === 'v' || e.key === 'V') toggleStatusVisible();
 });
 
-$('joinBtn').addEventListener('click', () => {
+// Lobby buttons
+$('lobbyJoinBtn').addEventListener('click', () => {
   const room = $('roomInput').value.trim();
   if (!room) return;
-  $('errorMsg').style.display = 'none';
-  $('retryBtn').style.display = 'none';
-  $('joinSection').classList.add('hidden');
-  $('waitSection').classList.remove('hidden');
+  $('lobbyError').style.display = 'none';
+  $('lobbyJoin').style.display = 'none';
+  $('lobbyWait').classList.remove('hidden');
   connectToRoom(room);
 });
-
-$('retryBtn').addEventListener('click', () => {
-  $('errorMsg').style.display = 'none';
-  $('retryBtn').style.display = 'none';
-  $('joinSection').querySelector('p').style.display = '';
-  $('joinSection').classList.remove('hidden');
-});
-
-$('roomInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('joinBtn').click(); });
+$('roomInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('lobbyJoinBtn').click(); });
+$('lobbyBack').addEventListener('click', backToMenu);
 
 draw();
 </script>
